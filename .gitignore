@@ -1,0 +1,10 @@
+# Ignore node_modules in all microservices
+client/node_modules/
+user/node_modules/
+posts/node_modules/
+message/node_modules/
+matcher/node_modules/
+common/node_modules/
+
+# Ignore any .env files
+.env
