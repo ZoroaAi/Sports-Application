@@ -5,6 +5,7 @@ posts/node_modules/
 message/node_modules/
 matcher/node_modules/
 common/node_modules/
+api-gateway/node_modules/
 
 # Ignore any .env files
 .env
