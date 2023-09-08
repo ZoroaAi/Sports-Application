@@ -14,14 +14,7 @@ exports.registerUser = async (req,res) => {
     } = req.body;
 
     try{
-        const existingUser = users.findOne({$or: [
-            {username},
-            {email}, 
-            {password1}, 
-            {password2},
-            {location},
-            {sports}
-        ]});
+        const existingUser = users.find(user => user.username === username || user.email === email);
 
         if (existingUser){
             return res.status(400).json({
@@ -54,7 +47,7 @@ exports.registerUser = async (req,res) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Error: ",error);
         res.status(500).join({
             error: 'Internal server error'
         });
