@@ -2,7 +2,9 @@ require('dotenv').config();
 const users = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-// const authMiddleware = require('../middleware/authMiddleware');
+
+// Array to hold refresh tokens, need database later
+let refreshTokens = []; 
 
 exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
@@ -14,21 +16,16 @@ exports.loginUser = async (req, res) => {
     try{
         if (await bcrypt.compare(password, user.hashedPassword)){
             // Generate JWT
-            const token = jwt.sign(
-                {
-                    id: user.id, email: user.email
-                },
-                process.env.ACCESS_TOKEN_SECRET,
-                {
-                    expiresIn: '1h'
-                }
-            );
-            console.log('Token:  ', token);
+            const accessToken = generateAccessToken(user);
+            const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
+            console.log('Token:  ', accessToken);
+            console.log('Token:  ', refreshToken);
 
             console.log("Logged in")
             return res.status(200).json({
                 message: 'Successfully Logged In!',
-                token: token
+                accessToken: accessToken,
+                refreshToken: refreshToken
             })
         } else {
             return res.status(400).json({
@@ -43,6 +40,47 @@ exports.loginUser = async (req, res) => {
     }
 
 };
+
+function generateAccessToken(user){
+    return jwt.sign(
+        {
+            id: user.id, email: user.email
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: '1m'
+        }
+    );
+}
+
+exports.refreshAccessToken = (req,res) => {
+    const { refreshToken } = req.body;
+
+    // Check if refresh token is valid and exists in storage
+    if(!refreshToken){
+        return res.status(400).json({
+            message:"Refresh token is not required!"
+        });
+    }
+
+    // Verify the refresh token
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err,user) => {
+        if (err){
+            return res.status(403).json({
+                message: 'Refresh token is not valid!'
+            });
+        }
+
+        // Create new access token
+        const newAccessToken = jwt.sign(
+            { id:user.id, email: user.email},
+            process.env.ACCESS_TOKEN_SECRET,
+            {expiresIn:'15m'}
+        );
+
+        return res.status(200).json({ accessToken: newAccessToken});
+    });
+}
 
 exports.logout = async (req,res) => {
 
