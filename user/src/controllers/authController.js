@@ -1,6 +1,8 @@
-
+require('dotenv').config();
 const users = require('../models/user');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+// const authMiddleware = require('../middleware/authMiddleware');
 
 exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
@@ -11,8 +13,18 @@ exports.loginUser = async (req, res) => {
     }
     try{
         if (await bcrypt.compare(password, user.hashedPassword)){
+            // Generate JWT
+            const token = jwt.sign(
+                {
+                    id: user.id, email: user.email
+                },
+                process.env.ACCESS_TOKEN_SECRET,
+            );
+
+            console.log("Logged in")
             res.status(200).json({
-                message: 'Successfully Logged In!'
+                message: 'Successfully Logged In!',
+                token: token
             })
         } else {
             res.status(400).json({
@@ -33,9 +45,5 @@ exports.logout = async (req,res) => {
 }
 
 exports.resetPassword = async (req,res) => {
-    
-}
-
-exports.refreshToken = async (req,res) => {
     
 }
