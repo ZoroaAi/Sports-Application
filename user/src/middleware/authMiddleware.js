@@ -5,7 +5,7 @@ exports.authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]
 
-    if (token){
+    if (!token){
         return res.status(401).json({
             message:"You are not authorized to access this route."
         });
@@ -19,7 +19,7 @@ exports.authenticateToken = (req, res, next) => {
         };
         req.user = user
         next();
-    })
+    });
 }
 
 exports.refreshToken = async (req,res) => {

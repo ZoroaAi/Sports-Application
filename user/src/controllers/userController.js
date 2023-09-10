@@ -2,6 +2,7 @@
 // Needs to bhe changed when implementing database
 const users = require('../models/user');
 const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require('uuid');
 
 // Registration Logic
 exports.registerUser = async (req,res) => {
@@ -31,10 +32,13 @@ exports.registerUser = async (req,res) => {
         // Needs validation for email formats and strong passwords
 
 
+        const userId = uuidv4();
+
         // Hashing the passwords before saving them in DB
         const hashedPassword = await hashPassword(req,res);
 
         const newUser = {
+            id : userId,
             username,
             email,
             location,
@@ -59,7 +63,6 @@ exports.registerUser = async (req,res) => {
 async function hashPassword(req,res){
     try {
         const hashedPassword = await bcrypt.hash(req.body.password1, 10);
-        console.log(hashedPassword);
         return hashedPassword;
     } catch(error) {
         console.log("Error:", error);
@@ -70,7 +73,26 @@ async function hashPassword(req,res){
 
 // Get User Details
 exports.getUserDetails = (req, res) => {
+    const userId = req.user.id;
+    const user = users.find(user => user.id === userId);
 
+    if(!user){
+        return res.status(404).json({
+            message: 'User not Found'
+        });
+    }
+
+    const userDetails = {
+        username: user.username,
+        email: user.email,
+        location: user.location,
+        sports: user.sports
+    }
+
+    const {password1, ...userDeatils} = user;
+    return res.status(200).json({
+        user: userDetails
+    });
 }
 
 // Edit Profile
