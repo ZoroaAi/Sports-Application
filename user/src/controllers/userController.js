@@ -1,6 +1,7 @@
 
 // Needs to bhe changed when implementing database
 const users = require('../models/user');
+const bcrypt = require('bcrypt');
 
 // Registration Logic
 exports.registerUser = async (req,res) => {
@@ -31,19 +32,20 @@ exports.registerUser = async (req,res) => {
 
 
         // Hashing the passwords before saving them in DB
-        // const hashedPassword ...
+        const hashedPassword = await hashPassword(req,res);
 
         const newUser = {
             username,
             email,
             location,
             sports,
-            password1
+            hashedPassword
         }
         users.push(newUser);
 
         res.status(201).json({
-            message: 'User Created'
+            message: 'User Created',
+            newUser
         });
 
     } catch (error) {
@@ -54,8 +56,15 @@ exports.registerUser = async (req,res) => {
     }
 };
 
-async function hashPassword(password){
-    // Password hashing logic
+async function hashPassword(req,res){
+    try {
+        const hashedPassword = await bcrypt.hash(req.body.password1, 10);
+        console.log(hashedPassword);
+        return hashedPassword;
+    } catch(error) {
+        console.log("Error:", error);
+        throw error;
+    }
 }
 
 

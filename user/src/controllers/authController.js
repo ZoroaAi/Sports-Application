@@ -1,21 +1,27 @@
 
 const users = require('../models/user');
+const bcrypt = require('bcrypt');
 
 exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
+    const user = users.find(user => user.email == email);
 
+    if(!user){
+        return res.status(400).json({ error : "Invalid Username or Password" });
+    }
     try{
-        const user = users.find(user => user.email == email && user.password1 == password);
-
-        if(!user){
-            return res.status(400).json({ error : "Invalid Username or Password" });
+        if (await bcrypt.compare(password, user.hashedPassword)){
+            res.status(200).json({
+                message: 'Successfully Logged In!'
+            })
+        } else {
+            res.status(400).json({
+                message: 'Wrong Credentials'
+            })
         }
-        res.status(200).json({
-            message: 'Logged in'
-        });
     } catch (error){
-        console.log("Error: ", err );
-        res.status(500).join({
+        console.log("Error: ", error );
+        res.status(500).json({
             error: 'Internal server error'
         });
     }
