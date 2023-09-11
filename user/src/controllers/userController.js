@@ -29,8 +29,13 @@ exports.registerUser = async (req,res) => {
             });
         }
     
-        // Needs validation for email formats and strong passwords
-
+        // Email and Password Validation
+        if (!email || !isEmailValid(email)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+        if (!password || !isPasswordValid(password)) {
+        return res.status(400).json({ error: 'Invalid password format' });
+        }
 
         const userId = uuidv4();
 
@@ -70,6 +75,15 @@ async function hashPassword(req,res){
     }
 }
 
+function isEmailValid(email){
+    const re = /^[A-Za-z0-9+_.-]+@(.+)$/;
+    return re.test(email);
+}
+
+function isPasswordValid(password){
+    const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    return re.test(password);
+}
 
 // Get User Details
 exports.getUserDetails = (req, res) => {
