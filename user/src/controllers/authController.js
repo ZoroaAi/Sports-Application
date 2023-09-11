@@ -18,6 +18,7 @@ exports.loginUser = async (req, res) => {
             // Generate JWT
             const accessToken = generateAccessToken(user);
             const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
+            refreshTokens.push(refreshToken); // Push to Database
             console.log('Token:  ', accessToken);
             console.log('Token:  ', refreshToken);
 
@@ -83,7 +84,28 @@ exports.refreshAccessToken = (req,res) => {
 }
 
 exports.logout = async (req,res) => {
+    const { token } = req.body;
 
+    // Validate Token
+    if(!isValidToken(token)){
+        return res.status(400).json({
+            message : "Invalid or expired token"
+        });
+    }
+
+    refreshTokens = refreshTokens.filter(t => t != token);
+    res.status(204).json({
+        message : "Logout successful"
+    });
+}
+
+function isValidToken(token){
+    try{
+        jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+        return true;
+    } catch (err){
+        return false;
+    }
 }
 
 exports.resetPassword = async (req,res) => {
