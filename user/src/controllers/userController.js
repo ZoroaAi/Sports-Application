@@ -33,8 +33,8 @@ exports.registerUser = async (req,res) => {
         if (!email || !isEmailValid(email)) {
             return res.status(400).json({ error: 'Invalid email format' });
         }
-        if (!password || !isPasswordValid(password)) {
-        return res.status(400).json({ error: 'Invalid password format' });
+        if (!password1 || !isPasswordValid(password1)) {
+            return res.status(400).json({ error: 'Invalid password format' });
         }
 
         const userId = uuidv4();
@@ -51,15 +51,15 @@ exports.registerUser = async (req,res) => {
             hashedPassword
         }
         users.push(newUser);
-
-        res.status(201).json({
+        
+        return res.status(201).json({
             message: 'User Created',
             newUser
         });
 
     } catch (error) {
         console.error("Error: ",error);
-        res.status(500).join({
+        return res.status(500).json({
             error: 'Internal server error'
         });
     }
@@ -81,6 +81,8 @@ function isEmailValid(email){
 }
 
 function isPasswordValid(password){
+    // one lowercase, one uppercase, one number, 8 characters in length
+    // example: 'Password1', 'Abc12345'
     const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
     return re.test(password);
 }
